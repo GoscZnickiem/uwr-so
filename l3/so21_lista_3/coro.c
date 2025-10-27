@@ -52,6 +52,7 @@ static noreturn void coro_switch(int v) {
 	if(v == EOF) TAILQ_REMOVE(&runqueue, curr, co_link);
 
 	if(running == NULL) running = TAILQ_FIRST(&runqueue);
+	if(running == NULL) Longjmp(dispatcher, v);
 
 	Longjmp(running->co_ctx, v);
 }
@@ -97,7 +98,6 @@ static void func_1(int _) {
 	char ch;
 
 	while (Read(0, &ch, 1) > 0) {
-		printf("%x\n", ch);
 		if (isspace(ch)) {
 			if (isspace(prev_ch))
 				continue;
@@ -110,7 +110,7 @@ static void func_1(int _) {
 	if (!isspace(ch))
 		words++;
 
-	dprintf(STDERR_FILENO, "\nfunc_1: words = %d\n", words);
+	printf("\nfunc_1: words = %d\n", words);
 }
 
 static void func_2(int ch) {
@@ -124,7 +124,7 @@ static void func_2(int ch) {
 		ch = coro_yield(ch);
 	}
 
-	dprintf(STDERR_FILENO, "func_2: removed = %d\n", removed);
+	printf("func_2: removed = %d\n", removed);
 }
 
 static void func_3(int ch) {
@@ -142,7 +142,7 @@ static void func_3(int ch) {
 		ch = coro_yield(NOTHING);
 	}
 
-	dprintf(STDERR_FILENO, "func_3: printed = %d\n", printed);
+	printf("func_3: printed = %d\n", printed);
 }
 
 int main(void) {
@@ -159,7 +159,7 @@ int main(void) {
 	coro_destroy(&co[1]);
 	coro_destroy(&co[2]);
 
-	dprintf(STDERR_FILENO, "Bye, bye!\n");
+	printf("Bye, bye!\n");
 
 	return EXIT_SUCCESS;
 }
